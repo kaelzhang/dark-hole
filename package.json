@@ -1,7 +1,7 @@
 {
   "name": "dark-hole",
   "version": "1.0.0",
-  "description": "Dark-hole accepts everything, but everything just disappears.",
+  "description": "`dark-hole` swallows(accepts) everything, and everything just disappears(gone)",
   "main": "src/index.js",
   "scripts": {
     "test": "NODE_DEBUG=dark-hole nyc ava --timeout=10s --verbose",
@@ -21,7 +21,10 @@
     "url": "git://github.com/kaelzhang/dark-hole.git"
   },
   "keywords": [
-    "dark-hole"
+    "dark-hole",
+    "blackhole",
+    "proxy",
+    "swallow"
   ],
   "engines": {
     "node": ">= 6"

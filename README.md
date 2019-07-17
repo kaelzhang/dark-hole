@@ -15,7 +15,9 @@
 
 # dark-hole
 
-Dark-hole accepts everything, but everything just disappears.
+`dark-hole` swallows(accepts) everything, and everything just disappears(gone).
+
+`dark-hole` is useful if you **pretend** to _implement_ some interfaces but not actually implement them.
 
 ## Install
 
@@ -26,7 +28,17 @@ $ npm i dark-hole
 ## Usage
 
 ```js
-const dark_hole = require('dark-hole')
+const blackhole = require('dark-hole')()
+
+// It swallows everything
+blackhole
+.whateverProp
+.asAccessingArrayItem[0]
+.runAFunction('blah blah')
+.hahaha
+.boooooooom
+.neverDie()
+// Nothing happens. Nothing. Without errors.
 ```
 
 ## License

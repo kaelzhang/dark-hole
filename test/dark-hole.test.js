@@ -1,7 +1,18 @@
 const test = require('ava')
-const log = require('util').debuglog('dark-hole')
-const dark_hole = require('../src')
+// const log = require('util').debuglog('dark-hole')
+const create = require('../src')
 
-test('description', t => {
-  t.is(true, true)
+test('example', t => {
+  const hole = create()
+
+  hole
+  .whateverProp
+  .asAccessingArrayItem[0]
+  .runAFunction('blah blah')
+  .hahaha
+  .boooooooom
+  .xxxxx
+  .neverDie()
+
+  t.pass()
 })
