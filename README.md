@@ -32,10 +32,10 @@ const blackhole = require('dark-hole')()
 
 // It swallows everything
 blackhole
-.whateverProp
+.whateverProperty
 .asAccessingArrayItem[0]
-.runAFunction('blah blah')
-.hahaha
+.runFunction('blah blah')
+.destroyTheWorld
 .boooooooom
 .neverDie()
 // Nothing happens. Nothing. Without errors.
