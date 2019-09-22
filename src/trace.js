@@ -1,5 +1,5 @@
 const {
-  isArray, isString
+  isArray, isString, isObject
 } = require('core-util-is')
 const {error} = require('./error')
 
@@ -8,19 +8,25 @@ const LENGTH = Symbol('dark-hole:length')
 const ACCESS = Symbol('dark-hole:access')
 const CALL = Symbol('dark-hole:call')
 
+const THIS_ARG = 'thisArg'
+const RETURNS_TRUE = () => true
+
 const propTrace = property => ({
   type: 'PropertyAccess',
   property
 })
 
-const callTrace = (args, thisObject) => ({
+const callTrace = (args, thisArg) => ({
   type: 'FunctionCall',
   args,
-  thisObject
+  thisArg
 })
 
 const arrayEqual = (target, expect) =>
   expect.every((arg, i) => arg === target[i])
+
+const createThisArgTester = thisArg =>
+  expect => thisArg === expect
 
 const MATCHER = {
   PropertyAccess ({
@@ -32,13 +38,14 @@ const MATCHER = {
   },
 
   FunctionCall (target, expect) {
-    return target.thisObject === expect.this.Object
-    && arrayEqual(target.args, expect.args)
+    return arrayEqual(target.args, expect.args)
+    // target.thisArg is a function
+    && target.thisArg(expect.thisArg)
   }
 }
 
 const matchTrace = (target, expect) =>
-  target.type !== expect.type
+  target.type === expect.type
   && MATCHER[expect.type](target, expect)
 
 const matchTraces = (traces, expect, start) =>
@@ -78,8 +85,8 @@ class Tracer {
     return this._extend(propTrace(property))
   }
 
-  [CALL] (args, thisObject) {
-    return this._extend(callTrace(args, thisObject))
+  [CALL] (args, thisArg) {
+    return this._extend(callTrace(args, thisArg))
   }
 
   get [Symbol.iterator] () {
@@ -118,14 +125,23 @@ class Tracer {
     return new Tracer(this[STACK].slice(start + expect.length))
   }
 
-  willBeCalledWith ({
-    accessor,
-    args = [],
-    thisObject,
-    begin = true
-  }) {
+  willBeCalledWith (options) {
+    if (!isObject(options)) {
+      throw error('INVALID_OPTIONS', options)
+    }
+
+    const {
+      accessor,
+      args = [],
+      begin = true
+    } = options
+
+    const thisArg = THIS_ARG in options
+      ? createThisArgTester(options.thisArg)
+      : RETURNS_TRUE
+
     const expect = createTracesByAccessor(accessor)
-    .concat(callTrace(args, thisObject))
+    .concat(callTrace(args, thisArg))
 
     return this._match(expect, begin)
   }
@@ -139,7 +155,7 @@ class Tracer {
   }
 }
 
-const trace = proxy => new Tracer(proxy[STACK])
+const trace = proxy => proxy[STACK]
 
 module.exports = {
   STACK,

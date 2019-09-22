@@ -1,11 +1,14 @@
 const test = require('ava')
 // const log = require('util').debuglog('dark-hole')
-const {create} = require('../src')
+const {
+  create,
+  trace
+} = require('../src')
 
 test('example', t => {
   const hole = create()
 
-  hole
+  const ret = hole
   .whateverProp
   .asAccessingArrayItem[0]
   .runAFunction('blah blah')
@@ -13,6 +16,15 @@ test('example', t => {
   .boooooooom
   .xxxxx
   .neverDie()
+
+  t.pass()
+
+  const tracer = trace(ret)
+
+  tracer.willBeCalledWith({
+    accessor: 'whateverProp.asAccessingArrayItem.0.runAFunction',
+    args: ['blah blah']
+  })
 
   t.pass()
 })

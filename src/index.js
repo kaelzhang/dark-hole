@@ -7,23 +7,23 @@ const {
   Tracer
 } = require('./trace')
 
-const createProxy = tracer => {
-  const origin = function (...args) {
-    return createProxy(tracer[CALL](args, this))
-  }
+const NOOP = () => {}
 
-  return new Proxy(origin, {
-    // Accepts everything
-    // And always returns itself
-    get (target, prop) {
-      if (prop === STACK) {
-        return tracer
-      }
+const createProxy = tracer => new Proxy(NOOP, {
+  apply (_, thisArg, args) {
+    return createProxy(tracer[CALL](args, thisArg))
+  },
 
-      return createProxy(tracer[ACCESS](prop))
+  // Accepts everything
+  // And always returns itself
+  get (_, prop) {
+    if (prop === STACK) {
+      return tracer
     }
-  })
-}
+
+    return createProxy(tracer[ACCESS](prop))
+  }
+})
 
 const create = () => createProxy(new Tracer([]))
 
