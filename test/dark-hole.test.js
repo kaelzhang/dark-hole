@@ -5,26 +5,30 @@ const {
   trace
 } = require('../src')
 
+const code = 'NO_MATCH'
+
 test('example', t => {
-  const hole = create()
+  const blackhole = create()
 
-  const ret = hole
-  .whateverProp
-  .asAccessingArrayItem[0]
-  .runAFunction('blah blah')
-  .hahaha
-  .boooooooom
-  .xxxxx
-  .neverDie()
+  const returnValue = blackhole
+  .whateverProperty          // 1
+  .asAccessingArrayItem[0]   // 2, 3
+  .runFunction('blah blah')  // 3, 4
+  .destroyTheWorld           // 5
+  .boooooooom                // 6
+  .neverDie()                // 7, 8
 
-  t.pass()
+  const tracer = trace(returnValue)
 
-  const tracer = trace(ret)
-
-  tracer.willBeCalledWith({
-    accessor: 'whateverProp.asAccessingArrayItem.0.runAFunction',
-    args: ['blah blah']
+  const after4 = tracer.willBeCalledWith({
+    accessor: 'whateverProperty.asAccessingArrayItem.0.runFunction',
+    args: ['blah blah'],
+    immediately: true
   })
 
-  t.pass()
+  t.throws(() => tracer.willBeCalledWith({
+    accessor: 'asAccessingArrayItem.0.runAFunction',
+    args: ['blah blah'],
+    immediately: true
+  }), {code})
 })

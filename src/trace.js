@@ -93,11 +93,11 @@ class Tracer {
     return this[STACK][Symbol.iterator]
   }
 
-  get done () {
+  get ended () {
     return this[STACK].length === 0
   }
 
-  _matchTraces (expect, start, lookAhead) {
+  _matchTraces (expect, start, immediately) {
     const {length} = expect
 
     if (start + length > this[LENGTH]) {
@@ -106,20 +106,20 @@ class Tracer {
 
     const matched = matchTraces(this[STACK], expect, start)
 
-    if (matched || !lookAhead) {
+    if (matched || immediately) {
       return matched
         ? start
         : - 1
     }
 
-    return this._matchTraces(expect, start + 1, true)
+    return this._matchTraces(expect, start + 1, false)
   }
 
-  _match (expect, begin) {
-    const start = this._matchTraces(expect, 0, !begin)
+  _match (expect, immediately) {
+    const start = this._matchTraces(expect, 0, immediately)
 
     if (start === - 1) {
-      throw error('NOT_MATCH')
+      throw error('NO_MATCH')
     }
 
     return new Tracer(this[STACK].slice(start + expect.length))
@@ -133,7 +133,7 @@ class Tracer {
     const {
       accessor,
       args = [],
-      begin = true
+      immediately
     } = options
 
     const thisArg = THIS_ARG in options
@@ -143,15 +143,15 @@ class Tracer {
     const expect = createTracesByAccessor(accessor)
     .concat(callTrace(args, thisArg))
 
-    return this._match(expect, begin)
+    return this._match(expect, immediately)
   }
 
   willBeAccessedBy ({
     accessor,
-    begin = true
+    immediately
   }) {
     const expect = createTracesByAccessor(accessor)
-    return this._match(expect, begin)
+    return this._match(expect, immediately)
   }
 }
 
