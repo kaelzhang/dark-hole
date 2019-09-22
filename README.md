@@ -64,6 +64,7 @@ try {
 } catch (err) {
   console.log(err.code)
   // 'NO_MATCH'
+  // It was not accessed immediately.
 }
 ```
 
@@ -71,7 +72,8 @@ try {
 
 ```js
 const after7 = after4.willBeAccessedBy({
-  accessor: 'destroyTheWorld.boooooooom.neverDie',
+  // `accessor` could be an array
+  accessor: ['destroyTheWorld', 'boooooooom', 'neverDie'],
   immediately: true
 })
 
