@@ -1,6 +1,6 @@
 const test = require('ava')
 // const log = require('util').debuglog('dark-hole')
-const create = require('../src')
+const {create} = require('../src')
 
 test('example', t => {
   const hole = create()
