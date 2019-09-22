@@ -1,6 +1,6 @@
 {
   "name": "dark-hole",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "`dark-hole` swallows(accepts) everything, and everything just disappears(gone). Like a blackhole",
   "main": "src/index.js",
   "scripts": {

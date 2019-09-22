@@ -4,6 +4,8 @@ const {
 const {error} = require('./error')
 
 const STACK = Symbol('dark-hole:stack')
+const START = Symbol('dark-hole:start')
+
 const LENGTH = Symbol('dark-hole:length')
 const ACCESS = Symbol('dark-hole:access')
 const CALL = Symbol('dark-hole:call')
@@ -23,7 +25,8 @@ const callTrace = (args, thisArg) => ({
 })
 
 const arrayEqual = (target, expect) =>
-  expect.every((arg, i) => arg === target[i])
+  target.length === expect.length
+  && expect.every((arg, i) => arg === target[i])
 
 const createThisArgTester = thisArg =>
   expect => thisArg === expect
@@ -39,8 +42,8 @@ const MATCHER = {
 
   FunctionCall (target, expect) {
     return arrayEqual(target.args, expect.args)
-    // target.thisArg is a function
-    && target.thisArg(expect.thisArg)
+    // expect.thisArg is a function
+    && expect.thisArg(target.thisArg)
   }
 }
 
@@ -61,7 +64,7 @@ const parseAccessor = accessor => {
   }
 
   if (!isArray(accessor) || !accessor.every(isString)) {
-    throw error('INVALID_ACCESSOR')
+    throw error('INVALID_ACCESSOR', accessor)
   }
 
   return accessor
@@ -70,9 +73,16 @@ const parseAccessor = accessor => {
 const createTracesByAccessor = accessor =>
   parseAccessor(accessor).map(propTrace)
 
+const checkOptions = options => {
+  if (!isObject(options)) {
+    throw error('INVALID_OPTIONS', options)
+  }
+}
+
 class Tracer {
-  constructor (stack) {
+  constructor (stack, start = 0) {
     this[STACK] = stack
+    this[START] = start
     this[LENGTH] = stack.length
   }
 
@@ -90,7 +100,8 @@ class Tracer {
   }
 
   get [Symbol.iterator] () {
-    return this[STACK][Symbol.iterator]
+    const stack = this[STACK]
+    return stack[Symbol.iterator].bind(stack)
   }
 
   get ended () {
@@ -118,17 +129,16 @@ class Tracer {
   _match (expect, immediately) {
     const start = this._matchTraces(expect, 0, immediately)
 
-    if (start === - 1) {
-      throw error('NO_MATCH')
+    if (start !== - 1) {
+      const newStart = start + expect.length
+      return new Tracer(this[STACK].slice(newStart), newStart)
     }
 
-    return new Tracer(this[STACK].slice(start + expect.length))
+    throw error('NO_MATCH')
   }
 
   willBeCalledWith (options) {
-    if (!isObject(options)) {
-      throw error('INVALID_OPTIONS', options)
-    }
+    checkOptions(options)
 
     const {
       accessor,
@@ -146,10 +156,14 @@ class Tracer {
     return this._match(expect, immediately)
   }
 
-  willBeAccessedBy ({
-    accessor,
-    immediately
-  }) {
+  willBeAccessedBy (options) {
+    checkOptions(options)
+
+    const {
+      accessor,
+      immediately
+    } = options
+
     const expect = createTracesByAccessor(accessor)
     return this._match(expect, immediately)
   }

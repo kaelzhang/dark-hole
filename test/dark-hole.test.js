@@ -31,4 +31,68 @@ test('example', t => {
     args: ['blah blah'],
     immediately: true
   }), {code})
+
+  const end = after4.willBeCalledWith({
+    args: []
+  })
+
+  t.is(end.ended, true)
+  t.is(tracer.willBeCalledWith({
+    args: []
+  }).ended, true)
+
+  t.throws(() => tracer.willBeCalledWith({
+    accessor: 1
+  }), {
+    code: 'INVALID_ACCESSOR'
+  })
+
+  t.throws(() => tracer.willBeAccessedBy(), {
+    code: 'INVALID_OPTIONS'
+  })
+})
+
+test('access', t => {
+  const h = create()
+
+  const tracer = trace(h.foo.bar.baz).willBeAccessedBy({
+    accessor: ['bar', 'baz']
+  })
+
+  t.is(tracer.ended, true)
+})
+
+test('exceed length', t => {
+  t.throws(() => trace(create().foo.bar.baz).willBeAccessedBy({
+    accessor: 'bar.baz.qux'
+  }), {
+    code
+  })
+})
+
+test('iterator', t => {
+  t.deepEqual([...trace(create().foo.bar)], [{
+    type: 'PropertyAccess',
+    property: 'foo'
+  }, {
+    type: 'PropertyAccess',
+    property: 'bar'
+  }])
+})
+
+test('thisArg', t => {
+  const thisArg = {
+    foo: 1
+  }
+
+  const h = create()
+  const v = Reflect.apply(h.foo, thisArg, ['foo'])
+
+  trace(v).willBeCalledWith({
+    accessor: 'foo',
+    thisArg,
+    args: ['foo']
+  })
+
+  t.pass()
 })

@@ -9,7 +9,7 @@
 
 `dark-hole` is useful if you **pretend** to _implement_ some interfaces but not actually implement them.
 
-And you could trace everything that swallowed by `dark-hole`, which is very useful for testing purpose
+And you could trace everything that swallowed by `dark-hole`, which is very useful for testing purpose.
 
 ## Install
 
@@ -90,6 +90,34 @@ console.log(end.ended)
 // true
 // , if nothing happens afterwards
 ```
+
+# APIs
+
+## create() : Proxy
+
+Returns a dark hole
+
+## trace(DarkHole) : Tracer
+
+### tracer.willBeCalledWith(options): Tracer
+
+- **accessor?** `string | Array<string>`
+- **thisArg?** `any` If `options` does not contain the `'thisArg'` property, then it will match any _this_ argument. Or it will do a exact match.
+- **args?** `Array<any>=[]`
+- **immediately?** `boolean`
+
+Returns `Tracer` if there is a match.
+
+Or an `NO_MATCH` error will be thrown.
+
+### tracer.willBeAccessedBy(options): Tracer
+
+- **accessor** `string | Array<string>`
+- **immediately?** `boolean`
+
+Returns `Tracer` if there is a match.
+
+Or an `NO_MATCH` error will be thrown.
 
 ## License
 
